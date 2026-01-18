@@ -4,21 +4,21 @@ import Layout from '../../../components/Layout';
 import { Link } from '../../../routes';
 import Campaings from '../../../Ethereum/campaign';
 import RequestRow from '../../../components/RequestRow';
-import web3 from '../../../Ethereum/web3';
+import { ethers } from 'ethers';
 
 export default class RequestIndex extends Component {
 
     static async getInitialProps(props) {
         const { address } = props.query;
         const campaign = Campaings(address);
-        const requestCount = await campaign.methods.getRequestsCount().call();
-        const approversCount = await campaign.methods.approversCount().call();
-        const summary = await campaign.methods.getSummary().call();
+        const requestCount = await campaign.getRequestsCount();
+        const approversCount = await campaign.approversCount();
+        const summary = await campaign.getSummary();
         const contractBalance = summary[1];
 
         const requests = await Promise.all(
             Array(parseInt(requestCount)).fill().map((element, index) => {
-                return campaign.methods.requests(index).call()
+                return campaign.requests(index);
             })
         );
 
@@ -56,7 +56,7 @@ export default class RequestIndex extends Component {
                         </Grid.Column>
                         <Grid.Column textAlign='center'>
                             <Label>
-                                <Icon name='ethereum' /> {web3.utils.fromWei(campaignsBalance, 'ether')} ether
+                                <Icon name='ethereum' /> {ethers.formatEther(campaignsBalance)} ether
                             </Label>
                         </Grid.Column>
                         <Grid.Column textAlign='right'>

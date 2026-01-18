@@ -1,10 +1,11 @@
-import web3 from './web3';
+import { Contract } from 'ethers';
+import provider from './web3';
 import Campaign from './build/Campaign.json';
 
 export default (address) => {
-    return new web3.eth.Contract(
+    return new Contract(
+        address,
         JSON.parse(Campaign.interface),
-        address
+        provider
     );
-
-}
+};

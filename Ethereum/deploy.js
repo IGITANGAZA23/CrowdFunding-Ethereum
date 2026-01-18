@@ -1,30 +1,32 @@
-const HDWalletProvider = require('truffle-hdwallet-provider');
-
-const Web3 = require('web3');
+const { ethers } = require('ethers');
 const compiledFactory = require('./build/CampaignFactory.json');
 
 require('dotenv').config();
 
-// const OPTIONS = {
-//     defaultBlock: 'latest',
-//     transactionConfirmationBlocks: 1,
-//     transactionBlockTimeout: 8
-// }
-const provider = new HDWalletProvider(
-    process.env.mnemonic,
-    process.env.link
-);
-
-const web3 = new Web3(provider);
 const deploy = async () => {
-    const accounts = await web3.eth.getAccounts();
-    console.log('Attemping to deploy to accounts ', accounts[0]);
+    const provider = new ethers.JsonRpcProvider(process.env.link);
 
-    const result = await new web3.eth.Contract(JSON.parse(compiledFactory.interface))
-        .deploy({ data: '0x' + compiledFactory.bytecode })
-        .send({ from: accounts[0] });
+    // Create a wallet usage the mnemonic and connect to the provider
+    const wallet = ethers.Wallet.fromPhrase(process.env.mnemonic).connect(provider);
 
-    console.log('Contract deploy to ', result.options.address);
+    console.log('Attempting to deploy from account', wallet.address);
+
+    const factory = new ethers.ContractFactory(
+        JSON.parse(compiledFactory.interface),
+        compiledFactory.bytecode,
+        wallet
+    );
+
+    const contract = await factory.deploy();
+    await contract.waitForDeployment();
+
+    console.log('Contract deployed to', await contract.getAddress());
+
+    // Prevent the process from hanging
+    process.exit(0);
 };
 
-deploy();
+deploy().catch(err => {
+    console.error(err);
+    process.exit(1);
+});

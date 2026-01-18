@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Table, Button, Message, Icon, Popup } from 'semantic-ui-react';
-import web3 from '../Ethereum/web3';
+import { ethers } from 'ethers';
+import provider from '../Ethereum/web3';
 import Campaign from '../Ethereum/campaign';
 
 export default class RequestRow extends Component {
@@ -22,10 +23,11 @@ export default class RequestRow extends Component {
         try {
             const campaign = Campaign(this.props.address);
 
-            const accounts = await web3.eth.getAccounts();
-            await campaign.methods.approveRequest(this.props.id).send({
-                from: accounts[0]
-            });
+            const signer = await provider.getSigner();
+            const campaignWithSigner = campaign.connect(signer);
+
+            const tx = await campaignWithSigner.approveRequest(this.props.id);
+            await tx.wait();
         }
         catch (error) {
             this.setState({
@@ -46,11 +48,11 @@ export default class RequestRow extends Component {
         try {
             const campaign = Campaign(this.props.address);
 
-            const accounts = await web3.eth.getAccounts();
+            const signer = await provider.getSigner();
+            const campaignWithSigner = campaign.connect(signer);
 
-            await campaign.methods.finalizeRequest(this.props.id).send({
-                from: accounts[0]
-            });
+            const tx = await campaignWithSigner.finalizeRequest(this.props.id);
+            await tx.wait();
         } catch (error) {
             this.setState({
                 errorMessageFinalize: error.message
@@ -71,7 +73,7 @@ export default class RequestRow extends Component {
             <Row disabled={request.complete} positive={readyToFinalize && !request.complete} >
                 <Cell>{id}</Cell>
                 <Cell>{request.description}</Cell>
-                <Cell>{web3.utils.fromWei(request.value, 'ether')} (ether)</Cell>
+                <Cell>{ethers.formatEther(request.value)} (ether)</Cell>
                 <Cell>{request.recipient}</Cell>
                 <Cell>{request.approvalCount}/{approversCount}</Cell>
                 <Cell error={!!this.state.errorMessageApprove}>

@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { Form, Button, Message, Input } from 'semantic-ui-react';
 import Campaigns from '../../../Ethereum/campaign';
-import web3 from '../../../Ethereum/web3';
+import provider from '../../../Ethereum/web3';
+import { ethers } from 'ethers';
 import { Link, Router } from '../../../routes';
 import Layout from '../../../components/Layout';
 
@@ -28,18 +29,18 @@ export default class RequestNew extends Component {
         const { description, value, recipient } = this.state;
 
         try {
-            const accounts = await web3.eth.getAccounts();
+            const signer = await provider.getSigner();
+            const campaignWithSigner = campaign.connect(signer);
 
             if (recipient == '') {
                 throw new Error('address cannot be empty');
             }
-            await campaign.methods.createRequest(
+            const tx = await campaignWithSigner.createRequest(
                 description,
-                web3.utils.toWei(value, 'ether'),
+                ethers.parseEther(value),
                 recipient
-            ).send({
-                from: accounts[0]
-            });
+            );
+            await tx.wait();
 
             Router.pushRoute(`/campaigns/${this.props.address}/requests/`)
         } catch (error) {

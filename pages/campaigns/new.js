@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Form, Button, Input, Message } from 'semantic-ui-react';
 import Layout from '../../components/Layout';
 import factory from '../../Ethereum/factory';
-import web3 from '../../Ethereum/web3';
+import provider from '../../Ethereum/web3';
 import { Router } from '../../routes';
 
 export default class CampaignNew extends Component {
@@ -18,11 +18,12 @@ export default class CampaignNew extends Component {
         this.setState({ loading: true, errorMessage: '' });
 
         try {
-            const accounts = await web3.eth.getAccounts();
-            await factory.methods.createCampaign(this.state.minimumContribution)
-                .send({
-                    from: accounts[0]
-                });
+            const signer = await provider.getSigner();
+            const factoryWithSigner = factory.connect(signer);
+
+            const tx = await factoryWithSigner.createCampaign(this.state.minimumContribution);
+            await tx.wait();
+
             Router.pushRoute('/');
         } catch (err) {
             this.setState({ errorMessage: err.message });

@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import Layout from '../../components/Layout';
 import Campaign from '../../Ethereum/campaign';
 import { Card, Grid, Button } from 'semantic-ui-react'
-import web3 from '../../Ethereum/web3';
+import provider from '../../Ethereum/web3';
+import { ethers } from 'ethers';
 import ContributeForm from '../../components/ContributeForm';
 import { Link } from '../../routes';
 
@@ -10,7 +11,8 @@ export default class CampaignShow extends Component {
     static async getInitialProps(props) {
         const campaign = Campaign(props.query.address);
 
-        const summary = await campaign.methods.getSummary().call();
+        // Ethers returns Result object which is array-like
+        const summary = await campaign.getSummary();
         return {
             address: props.query.address,
             minimumContribution: summary[0],
@@ -56,7 +58,7 @@ export default class CampaignShow extends Component {
                 meta: 'No of Approvers',
             },
             {
-                header: web3.utils.fromWei(campaignBalance, 'ether'),
+                header: ethers.formatEther(campaignBalance),
                 description: 'The amount of money campaign has left to spend.',
                 meta: 'Campaign Balance (ether)',
             }

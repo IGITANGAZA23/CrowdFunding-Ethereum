@@ -8,7 +8,7 @@ class CampaignIndex extends Component {
 
     static async getInitialProps() {
         // next js execute on the server side
-        const campaigns = await factory.methods.getDeployedCampaigns().call();
+        const campaigns = await factory.getDeployedCampaigns();
         return { campaigns };
     }
 

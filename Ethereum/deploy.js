@@ -4,10 +4,10 @@ const compiledFactory = require('./build/CampaignFactory.json');
 require('dotenv').config();
 
 const deploy = async () => {
-    const provider = new ethers.JsonRpcProvider(process.env.link);
+    const provider = new ethers.providers.JsonRpcProvider(process.env.link);
 
     // Create a wallet usage the mnemonic and connect to the provider
-    const wallet = ethers.Wallet.fromPhrase(process.env.mnemonic).connect(provider);
+    const wallet = ethers.Wallet.fromMnemonic(process.env.mnemonic).connect(provider);
 
     console.log('Attempting to deploy from account', wallet.address);
 
@@ -18,9 +18,9 @@ const deploy = async () => {
     );
 
     const contract = await factory.deploy();
-    await contract.waitForDeployment();
+    await contract.deployed();
 
-    console.log('Contract deployed to', await contract.getAddress());
+    console.log('Contract deployed to', contract.address);
 
     // Prevent the process from hanging
     process.exit(0);

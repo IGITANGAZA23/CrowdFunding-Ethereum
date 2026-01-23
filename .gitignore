@@ -1,5 +1,9 @@
-/node_modules
-/package-lock.json
-/Ethereum/build
-/Ethereum/.env
 /.next
+/build
+/cache
+/node_modules
+/.next/
+/build
+/cache
+/artifacts
+.env
